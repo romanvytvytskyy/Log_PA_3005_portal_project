@@ -23,6 +23,18 @@ class ThreadDetailView(DetailView):
         context['form'] = PostForm()
         return context
     
+class ThreadCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Thread
+    fields = ['title', 'description']
+    template_name = 'forum/thread_create.html'
+    
+    def test_func(self):
+        return self.request.user.is_moderator or self.request.user.is_staff
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid()
+    
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
